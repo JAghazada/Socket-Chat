@@ -1,0 +1,117 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+<style>
+    *{
+        margin: 0 !important;
+        padding: 0 !important;
+
+    }
+    #root{
+        width: 100%;
+        height: 100%;
+        background-color:#665c5c;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    h5{
+        color: #fff;font-size: 18px;
+    }
+    button{
+        padding: 0px 5px  !important;
+    }
+    .chat-wrapper{
+        width: 500px;
+        height:700px;
+        background-color: #fff;
+    }
+    .header{
+        background-color: rgb(78, 7, 100);
+        height: 30px;
+        display:flex;justify-content: center;align-items: center;
+    }
+    .main-wrapper{
+        width: 100%;
+        height:80%;
+        background:#c7c2c2;
+        overflow: scroll;
+    }
+    .person{
+        color: aquamarine;
+        font-size: 18px;
+        margin: 2px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    .typer{
+        display: block !important;
+    }
+    #message{
+        color: cadetblue;
+        font-size: 15px;
+        margin: 4px;
+        font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    }
+    input {
+        padding-left:15px !important;
+        margin-top:  4px !important;
+        color: rgb(2, 105, 105);
+        height: 30px ;
+        font-size: 22px;
+        font-family: Georgia, Times, 'Times New Roman', serif;
+    }
+</style>
+<div id="root">
+    <div class="row">
+    <div class="chat-wrapper">
+        <div id='header' class="header col-12">
+            <h5 class='text-center'>Chat Box</h5>
+        </div>
+        <div class="main-wrapper">
+            
+                <div id="message"></div>
+            <div class="typer"></div>
+
+            
+        </div>
+        <input type="text" value="Newton" class="name sender col-12" placeholder="Name">
+        <input type="text" value="I discover Gravity" class="col-12 sender-message" placeholder="Message">
+        <button class="btn btn-send mt-2  btn-dark">Send</button>
+    </div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.js" integrity="sha512-zN6KYOtONNTOGXz0RkWX2EpavN9VdIs+2w+To+fhciFv83YA9maUpi2lzZWrOfKXdFIZZomWufBznkyHi3a8oQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+
+    const socket = io.connect('http://localhost:3000')
+    var bgColors = ['#000000','#be0027','#cf8d2e','#e4e932','#2c9f45','#371777','#52325d','#511378'
+    ,'#ff0000','#fbb034','#ffdd00','#c1d82f','#00a4e4','#8a7967','#6a737b'    ]
+    setInterval(()=>{
+        const randomColor=bgColors[Math.ceil(Math.random()*bgColors.length-1)]
+        
+        document.getElementById("header").style.backgroundColor = randomColor        
+    },500)
+    const sender = document.querySelector(".sender")
+    const sender_message = document.querySelector(".sender-message")
+    const message = document.querySelector("#message")
+    const button = document.querySelector(".btn-send")
+    const typer = document.querySelector('.typer')
+    button.addEventListener("click",()=>{
+        if(sender_message.value.trim() !=='' && sender.value.trim() !=='' ){
+            socket.emit("chat",{
+            message:sender_message.value,
+            sender:sender.value
+        })
+        }
+    })
+    sender_message.addEventListener("keypress",()=>{
+        socket.emit("typing",sender.value)
+    })
+    socket.on('chat',(data)=>{
+        typer.innerHTML = ''
+        sender_message.value = ''
+        message.innerHTML +=`<p><t class="person"> ${data.sender}</t>:<b class="message">${data.message}</b></p><br>`
+
+    })
+    socket.on('typing',(sender)=>{
+        typer.innerHTML =`<p> ${sender} yaziyor</p><br>`
+    })
+</script>
